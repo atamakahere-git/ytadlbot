@@ -1,0 +1,6 @@
+music-tag==0.4.2
+pafy==0.5.5
+python-telegram-bot==13.5
+requests==2.25.1
+urlextract==1.2.0
+youtube-dl==2021.5.16
