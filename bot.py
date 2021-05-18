@@ -1,11 +1,12 @@
 import hashlib
 import os
 import requests
-from telegram import Update
+from telegram import Update, Message
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
-from const import TOKEN, PORT, HEROKU_APP_NAME, POOLING, LOGGER, PASS_HASH
+from const import TOKEN, PORT, HEROKU_APP_NAME, POOLING, LOGGER, PASS_HASH, DBHANDLER
 from downloader import download_from_url
 from helper import get_links_from_text, pretty_url_string, is_yt_url, get_pl_link_from_url, get_yt_links_from_pl
+from databasehandler import check_in_db, add_to_db
 from logger import log
 
 OWNER_CHAT_ID = 0
@@ -30,7 +31,6 @@ def help_bot(update: Update, context: CallbackContext) -> None:
 def download(update: Update, context: CallbackContext) -> None:
     """Command handler for /download or /d command, Receives the text, splits it into parts and tries to retrieve
     youtube urls from it , sends error message to user"""
-    log(update, LOGGER)
     cmd = update.message.text.strip().split(" ")
     if len(cmd) < 2:
         update.message.reply_text(f"Invalid command usage, please send url along with download command!")
@@ -51,6 +51,13 @@ def download(update: Update, context: CallbackContext) -> None:
 def download_url(update: Update, context: CallbackContext, url: str) -> None:
     """Function to download and send single youtube url downloaded audio file. Sends appropriate error message to
     user """
+    log(update, LOGGER)
+    db_status = check_in_db(url, DBHANDLER)
+    if db_status:
+        context.bot.forward_message(chat_id=update.effective_chat.id,
+                                    from_chat_id='@ytadlbotaudios',
+                                    message_id=db_status)
+        return
     audio_meta = download_from_url(url, update.message.chat.id)
     if audio_meta:
         if audio_meta['status']:
@@ -58,9 +65,18 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
             audio_file = open(audio_meta['file'], 'rb')
             audio_thumb = requests.get(audio_meta['thumb']).content
             try:
-                context.bot.send_audio(chat_id=chat_id, audio=audio_file, title=audio_meta['title'], thumb=audio_thumb,
-                                       performer=audio_meta['author'], duration=audio_meta['duration'], timeout=120)
-            except Exception:
+                msg = context.bot.send_audio(chat_id='@ytadlbotaudios',
+                                             audio=audio_file,
+                                             title=audio_meta['title'],
+                                             thumb=audio_thumb,
+                                             performer=audio_meta['author'],
+                                             duration=audio_meta['duration'],
+                                             timeout=120)
+                context.bot.forward_message(chat_id=update.effective_chat.id,
+                                            from_chat_id='@ytadlbotaudios',
+                                            message_id=msg.message_id)
+                add_to_db(url, msg.message_id, DBHANDLER)
+            except Exception as e:
                 update.message.reply_text("Unable to upload file")
             audio_file.close()
             os.remove(audio_meta['file'])
@@ -73,9 +89,9 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
 
 def extract_url_download(update: Update, context: CallbackContext) -> None:
     """Extract youtube urls from the random text send to the bot and starts downloading and sending from url"""
-    log(update, LOGGER)
     received_text = update.message.text
     yt_urls = get_links_from_text(received_text)
+    print(yt_urls)
     yt_urls_msg = update.message.reply_text(pretty_url_string(yt_urls), disable_web_page_preview=True)
     if len(yt_urls) > 0:
         for url in yt_urls:
@@ -181,6 +197,7 @@ def main() -> None:
                               webhook_url="https://{}.herokuapp.com/{}".format(HEROKU_APP_NAME, TOKEN))
     updater.idle()
     LOGGER.close()
+    DBHANDLER.close()
 
 
 if __name__ == '__main__':

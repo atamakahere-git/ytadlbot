@@ -1,5 +1,6 @@
 import os
 from logger import start_logger
+from databasehandler import start_dbhandler
 
 TOKEN = os.environ.get('BOT_TOKEN', None)
 PORT = int(os.environ.get("PORT", "8443"))
@@ -10,3 +11,4 @@ POOLING = os.environ.get('POOLING', False)
 
 # start the logger
 LOGGER = start_logger()
+DBHANDLER = start_dbhandler()
