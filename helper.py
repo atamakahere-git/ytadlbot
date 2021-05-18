@@ -56,13 +56,13 @@ def get_pl_link_from_url(url: str) -> str:
 
 
 def get_yt_links_from_pl(url: str) -> list:
-    urls = []
     page_text = requests.get(url).text
     parser = re.compile(r"watch\?v=\S+?list=")
     playlist = set(re.findall(parser, page_text))
     playlist = map(
         (lambda x: "https://www.youtube.com/" + x.replace("\\u0026list=", "")), playlist
     )
+    print([*playlist])
     return [*playlist]
 
 
