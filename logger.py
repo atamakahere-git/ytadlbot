@@ -1,5 +1,5 @@
 import sqlite3
-
+import os
 from telegram import Update
 
 STATUS = False
@@ -12,6 +12,7 @@ WHERE chat_id = ?;'''
 
 def start_logger() -> sqlite3.Connection or bool:
     global STATUS
+    os.remove('UserData.db-journal')
     conn = sqlite3.connect("UserData.db", check_same_thread=False)
     if conn:
         STATUS = True
