@@ -62,6 +62,7 @@ def get_yt_links_from_pl(url: str) -> list:
     playlist = map(
         (lambda x: "https://www.youtube.com/" + x.replace("\\u0026list=", "")), playlist
     )
+    print(*playlist)
     print([*playlist])
     return [*playlist]
 
