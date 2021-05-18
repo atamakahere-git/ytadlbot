@@ -1,6 +1,7 @@
 import pafy
 import music_tag
 import os
+from  helper import get_sec
 
 CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 PATH = CURR_DIR + '/downloaded/'
@@ -36,7 +37,8 @@ def download_from_url(url: str, chat_id: int):
         'file': file_path_name,
         'title': audio.title,
         'thumb': audio.getbestthumb(),
-        'author': audio.author
+        'author': audio.author,
+        'duration': get_sec(audio.duration)
     }
 
 
