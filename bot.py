@@ -91,7 +91,6 @@ def extract_url_download(update: Update, context: CallbackContext) -> None:
     """Extract youtube urls from the random text send to the bot and starts downloading and sending from url"""
     received_text = update.message.text
     yt_urls = get_links_from_text(received_text)
-    print(yt_urls)
     yt_urls_msg = update.message.reply_text(pretty_url_string(yt_urls), disable_web_page_preview=True)
     if len(yt_urls) > 0:
         for url in yt_urls:
