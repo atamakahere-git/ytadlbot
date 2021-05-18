@@ -57,6 +57,7 @@ def get_pl_link_from_url(url: str) -> str:
 
 def get_yt_links_from_pl(url: str) -> list:
     page_text = requests.get(url).text
+    print(page_text[:100])
     parser = re.compile(r"watch\?v=\S+?list=")
     playlist = set(re.findall(parser, page_text))
     playlist = map(
