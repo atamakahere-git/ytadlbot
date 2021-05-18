@@ -10,6 +10,11 @@ def is_yt_url(video_id: str) -> bool:
     return request.status_code == 200
 
 
+def is_pl_url(url: str):
+    r = requests.get(url)
+    return "Video unavailable" not in r.text
+
+
 def get_links_from_text(text: str) -> list:
     urls = URLExtract().find_urls(text)
     yt_urls = []
@@ -43,7 +48,7 @@ def get_pl_link_from_url(url: str) -> str:
     idx = url.find('list=')
     pl_id = url[idx + 5:]
     pl_url = "https://www.youtube.com/playlist?list=" + pl_id
-    if is_yt_url(pl_url):
+    if is_pl_url(url):
         return pl_url
     return ""
 
