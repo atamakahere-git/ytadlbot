@@ -11,15 +11,17 @@ def is_yt_url(video_id: str) -> bool:
 
 
 def is_pl_url(url: str):
-    r = requests.get(url)
-    return "Video unavailable" not in r.text
+    if 'list=' in url:
+        r = requests.get(url)
+        return "Video unavailable" not in r.text
+    return False
 
 
 def get_links_from_text(text: str) -> list:
     urls = URLExtract().find_urls(text)
     yt_urls = []
     for url in urls:
-        if is_yt_url(url):
+        if is_yt_url(url) or is_pl_url(url):
             yt_urls.append(url)
 
     return yt_urls
