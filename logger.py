@@ -12,7 +12,10 @@ WHERE chat_id = ?;'''
 
 def start_logger() -> sqlite3.Connection or bool:
     global STATUS
-    os.remove('UserData.db-journal')
+    try:
+        os.remove('UserData.db-journal')
+    except FileNotFoundError:
+        pass
     conn = sqlite3.connect("UserData.db", check_same_thread=False)
     if conn:
         STATUS = True
