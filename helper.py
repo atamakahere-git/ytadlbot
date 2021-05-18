@@ -1,14 +1,15 @@
-from urlextract import URLExtract
-from urllib import request, error
-import requests
 import re
+from urllib import request, error
+
+import requests
+from urlextract import URLExtract
 
 
 def is_yt_url(video_id: str) -> bool:
     checker_url = "https://www.youtube.com/oembed?url="
     video_url = checker_url + video_id
-    request = requests.get(video_url)
-    return request.status_code == 200
+    req = requests.get(video_url)
+    return req.status_code == 200
 
 
 def is_pl_url(url: str):
@@ -73,13 +74,13 @@ def get_yt_links_from_pl(url: str) -> list:
     except error.URLError as e:
         print(e.reason)
     idx = url.find('list=')
-    playlist_id = url[idx+5:]
+    playlist_id = url[idx + 5:]
     if page:
         vid_url_pat = re.compile(r'watch\?v=\S+?list=' + playlist_id)
         vid_url_matches = list(set(re.findall(vid_url_pat, page)))
         if vid_url_matches:
             for vid_url in vid_url_matches:
-                urls.append('https://www.youtube.com/'+vid_url[:19])
+                urls.append('https://www.youtube.com/' + vid_url[:19])
     return urls
 
 
