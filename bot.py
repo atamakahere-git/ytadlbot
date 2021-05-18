@@ -173,14 +173,13 @@ def main() -> None:
     # Pooling method to test on local machine
     if POOLING:
         updater.start_polling()
-        updater.idle()
     else:
         # webhook method for heroku
         updater.start_webhook(listen="0.0.0.0",
                               port=PORT,
                               url_path=TOKEN,
                               webhook_url="https://{}.herokuapp.com/{}".format(HEROKU_APP_NAME, TOKEN))
-
+    updater.idle()
     LOGGER.close()
 
 
