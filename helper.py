@@ -1,4 +1,5 @@
 from urlextract import URLExtract
+from urllib import request, error
 import requests
 import re
 
@@ -47,25 +48,34 @@ def is_yt_playlist(url: str) -> bool:
 
 
 def get_pl_link_from_url(url: str) -> str:
-    idx = url.find('list=')
-    pl_id = url[idx + 5:]
-    pl_url = "https://www.youtube.com/playlist?list=" + pl_id
-    if is_pl_url(url):
-        return pl_url
-    return ""
+    if 'list=' in url:
+        eq_idx = url.index('=') + 1
+        pl_id = url[eq_idx:]
+        if '&' in url:
+            amp = url.index('&')
+            pl_id = url[eq_idx:amp]
+        return "https://www.youtube.com/playlist?list=" + pl_id
+    else:
+        return ""
 
 
 def get_yt_links_from_pl(url: str) -> list:
-    page_text = requests.get(url).text
-    print(page_text[:100])
-    parser = re.compile(r"watch\?v=\S+?list=")
-    playlist = set(re.findall(parser, page_text))
-    playlist = map(
-        (lambda x: "https://www.youtube.com/" + x.replace("\\u0026list=", "")), playlist
-    )
-    print(*playlist)
-    print([*playlist])
-    return [*playlist]
+    page = None
+    urls = []
+    try:
+        page = request.urlopen(url).read()
+        page = str(page)
+    except error.URLError as e:
+        print(e.reason)
+    idx = url.find('list=')
+    playlist_id = url[idx+5:]
+    if page:
+        vid_url_pat = re.compile(r'watch\?v=\S+?list=' + playlist_id)
+        vid_url_matches = list(set(re.findall(vid_url_pat, page)))
+        if vid_url_matches:
+            for vid_url in vid_url_matches:
+                urls.append('https://www.youtube.com/'+vid_url[:19])
+    return urls
 
 
 def get_sec(time_str) -> int:
