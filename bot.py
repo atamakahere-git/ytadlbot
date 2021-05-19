@@ -149,32 +149,6 @@ def download_playlist_url(update: Update, context: CallbackContext, pl_link: str
         context.bot.delete_message(message_id=yt_urls_msg.message_id, chat_id=yt_urls_msg.chat_id)
 
 
-def my_chat_id(update: Update, context: CallbackContext):
-    update.message.reply_text(f"Your chat id : {update.effective_chat.id}")
-
-
-def set_owner_id(update: Update, context: CallbackContext):
-    """Use to set owner chat id by providing password"""
-    password = update.message.text.split(" ")
-    if len(password) != 2:
-        return
-    password = password[1].strip()
-    phash = hashlib.sha256((password + TOKEN).encode()).hexdigest()
-    if phash == PASS_HASH:
-        global OWNER_CHAT_ID
-        OWNER_CHAT_ID = update.message.chat_id
-        update.message.reply_text(f"Owner chat id set to : {OWNER_CHAT_ID}")
-        context.bot.send_message(chat_id=OWNER_CHAT_ID, text="TEST")
-        return
-
-
-def send_db(update: Update, context: CallbackContext):
-    """Send the database to the user"""
-    if update.effective_chat.id == OWNER_CHAT_ID:
-        context.bot.send_document(chat_id=OWNER_CHAT_ID, filename='UserData.db',
-                                  document=open('UserData.db', 'rb').read())
-
-
 def main() -> None:
     updater = None
     try:
@@ -189,10 +163,6 @@ def main() -> None:
     updater.dispatcher.add_handler(CommandHandler('d', download, run_async=True))
     updater.dispatcher.add_handler(CommandHandler('dlpl', download_playlist, run_async=True))
     updater.dispatcher.add_handler(CommandHandler('download_playlist', download_playlist, run_async=True))
-    updater.dispatcher.add_handler(CommandHandler('mychatid', my_chat_id, run_async=True))
-    updater.dispatcher.add_handler(CommandHandler('setownerid', set_owner_id))
-    updater.dispatcher.add_handler(CommandHandler('rcdata', send_db))
-
     # Message handler
     updater.dispatcher.add_handler(
         MessageHandler(Filters.text & ~Filters.command, extract_url_download, run_async=True))
