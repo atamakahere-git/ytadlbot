@@ -1,5 +1,6 @@
-import psycopg2
 import urllib.parse as urlparse
+
+import psycopg2
 from telegram import Update
 
 STATUS = False
@@ -66,7 +67,12 @@ def log(update: Update, conn):
     cmd = update.message.text.split(' ')[0][1:]
     cur = conn.cursor()
     try:
-        cur.execute(SQL_BASE_CMD.format(chat_id, first_name, last_name, username, 0, 0, 0))
+        cur.execute(
+            SQL_BASE_CMD.format(chat_id,
+                                "'" + first_name + "'",
+                                "'" + last_name + "'",
+                                "'" + username + "'",
+                                0, 0, 0))
     except Exception as e:
         print(e)
         try:
