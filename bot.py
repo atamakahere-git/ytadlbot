@@ -3,7 +3,7 @@ import os
 import requests
 from telegram import Update, Message
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
-from const import TOKEN, PORT, HEROKU_APP_NAME, POOLING, LOGGER, PASS_HASH, DBHANDLER
+from const import TOKEN, PORT, HEROKU_APP_NAME, POOLING, LOGGER, PASS_HASH, DBHANDLER, OPEN_CHANNEL_USERNAME
 from downloader import download_from_url
 from helper import *
 from databasehandler import check_in_db, add_to_db
@@ -53,12 +53,13 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
     user """
     log(update, LOGGER)
     url = refine_yt_url(url)
-    db_status = check_in_db(url, DBHANDLER)
-    if db_status:
-        context.bot.forward_message(chat_id=update.effective_chat.id,
-                                    from_chat_id='@ytadlbotaudios',
-                                    message_id=db_status)
-        return
+    if OPEN_CHANNEL_USERNAME:
+        db_status = check_in_db(url, DBHANDLER)
+        if db_status:
+            context.bot.forward_message(chat_id=update.effective_chat.id,
+                                        from_chat_id=OPEN_CHANNEL_USERNAME,
+                                        message_id=db_status)
+            return
     audio_meta = download_from_url(url, update.message.chat.id)
     if audio_meta:
         if audio_meta['status']:
@@ -66,17 +67,26 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
             audio_file = open(audio_meta['file'], 'rb')
             audio_thumb = requests.get(audio_meta['thumb']).content
             try:
-                msg = context.bot.send_audio(chat_id='@ytadlbotaudios',
-                                             audio=audio_file,
-                                             title=audio_meta['title'],
-                                             thumb=audio_thumb,
-                                             performer=audio_meta['author'],
-                                             duration=audio_meta['duration'],
-                                             timeout=120)
-                context.bot.forward_message(chat_id=update.effective_chat.id,
-                                            from_chat_id='@ytadlbotaudios',
-                                            message_id=msg.message_id)
-                add_to_db(url, msg.message_id, DBHANDLER)
+                if OPEN_CHANNEL_USERNAME:
+                    msg = context.bot.send_audio(chat_id=OPEN_CHANNEL_USERNAME,
+                                                 audio=audio_file,
+                                                 title=audio_meta['title'],
+                                                 thumb=audio_thumb,
+                                                 performer=audio_meta['author'],
+                                                 duration=audio_meta['duration'],
+                                                 timeout=120)
+                    context.bot.forward_message(chat_id=update.effective_chat.id,
+                                                from_chat_id=OPEN_CHANNEL_USERNAME,
+                                                message_id=msg.message_id)
+                    add_to_db(url, msg.message_id, DBHANDLER)
+                else:
+                    context.bot.send_audio(chat_id=chat_id,
+                                           audio=audio_file,
+                                           title=audio_meta['title'],
+                                           thumb=audio_thumb,
+                                           performer=audio_meta['author'],
+                                           duration=audio_meta['duration'],
+                                           timeout=120)
             except Exception as e:
                 update.message.reply_text("Unable to upload file")
             audio_file.close()

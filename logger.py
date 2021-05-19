@@ -80,7 +80,7 @@ def log(update: Update, conn):
             elif cmd == 'help':
                 cur.execute(SQL_UPDATE_CMD.format("'h_cmd'", "'h_cmd+1'", chat_id))
             else:
-                cur.execute(SQL_UPDATE_CMD.format("'d_cmd'", "'h_cmd+1'", chat_id))
+                cur.execute(SQL_UPDATE_CMD.format("'d_cmd'", "'d_cmd+1'", chat_id))
         except Exception as e:
             print(e)
             print(f"Update failed for {chat_id}")
