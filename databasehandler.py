@@ -1,5 +1,6 @@
-import psycopg2
 import urllib.parse as urlparse
+
+import psycopg2
 
 STATUS = False
 
@@ -51,7 +52,12 @@ def start_dbhandler(audio_db: str):
 def check_in_db(url, conn) -> int or None:
     if STATUS:
         cur = conn.cursor()
-        cur.execute("SELECT msg_id from Audios where yt_link = {}".format(url))
+        try:
+            cur.execute("SELECT msg_id from Audios where yt_link = {}".format("'" + url + "'"))
+        except Exception as e:
+            print(e)
+            print("Can't run find command!")
+
         row = cur.fetchall()
         if len(row) > 0:
             return int(row[0][0])
@@ -62,7 +68,7 @@ def add_to_db(url: str, msg_id: int, conn):
     if STATUS:
         cur = conn.cursor()
         cur.execute("INSERT INTO Audios(yt_link,msg_id)"
-                    "VALUES ({},{})".format(url,msg_id))
+                    "VALUES ({},{})".format("'" + url + "'", msg_id))
         conn.commit()
     else:
         print("DB is not active cannot add the entry!")
