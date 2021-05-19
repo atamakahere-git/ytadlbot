@@ -5,6 +5,16 @@ import requests
 from urlextract import URLExtract
 
 
+def refine_yt_url(url: str) -> str:
+    idx = 0
+    if 'watch?v=' in url:
+        idx = url.find('watch?v=') + 8
+    elif 'youtu.be' in url:
+        idx = url.find('youtu.be/') + 9
+    vid_id = url[idx:idx + 11]
+    return "https://www.youtube.com/watch?v=" + vid_id
+
+
 def is_yt_url(video_id: str) -> bool:
     checker_url = "https://www.youtube.com/oembed?url="
     video_url = checker_url + video_id

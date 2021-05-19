@@ -5,7 +5,7 @@ from telegram import Update, Message
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 from const import TOKEN, PORT, HEROKU_APP_NAME, POOLING, LOGGER, PASS_HASH, DBHANDLER
 from downloader import download_from_url
-from helper import get_links_from_text, pretty_url_string, is_yt_url, get_pl_link_from_url, get_yt_links_from_pl
+from helper import *
 from databasehandler import check_in_db, add_to_db
 from logger import log
 
@@ -52,6 +52,7 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
     """Function to download and send single youtube url downloaded audio file. Sends appropriate error message to
     user """
     log(update, LOGGER)
+    url = refine_yt_url(url)
     db_status = check_in_db(url, DBHANDLER)
     if db_status:
         context.bot.forward_message(chat_id=update.effective_chat.id,
