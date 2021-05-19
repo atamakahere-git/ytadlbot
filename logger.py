@@ -73,8 +73,7 @@ def log(update: Update, conn):
                                 "'" + last_name + "'",
                                 "'" + username + "'",
                                 0, 0, 0))
-    except Exception as e:
-        print(e)
+    except Exception:
         try:
             if cmd == 'start':
                 cur.execute(SQL_UPDATE_CMD.format('s_cmd', 's_cmd+1', chat_id))
@@ -84,6 +83,6 @@ def log(update: Update, conn):
                 cur.execute(SQL_UPDATE_CMD.format('d_cmd', 'h_cmd+1', chat_id))
         except Exception as e:
             print(e)
-            print(f"Unable to log : {chat_id}")
+            print(f"Update failed for {chat_id}")
 
     conn.commit()
