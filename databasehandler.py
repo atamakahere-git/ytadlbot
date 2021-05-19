@@ -1,13 +1,21 @@
-import os
-import sqlite3
+import psycopg2
+import urllib.parse as urlparse
 
 
-def start_dbhandler() -> sqlite3.Connection or bool:
-    try:
-        os.remove('AudioDB.db-journal')
-    except FileNotFoundError:
-        pass
-    conn = sqlite3.connect("AudioDB.db", check_same_thread=False)
+def start_dbhandler(audio_db: str) -> bool:
+    result = urlparse.urlparse(audio_db)
+    username = result.username
+    password = result.password
+    database = result.path[1:]
+    hostname = result.hostname
+    port = result.port
+    conn = psycopg2.connect(
+        database=database,
+        user=username,
+        password=password,
+        host=hostname,
+        port=port
+    )
     if conn:
         conn.execute("CREATE TABLE IF NOT EXISTS Audios("
                      "yt_link TEXT PRIMARY KEY,"
@@ -25,6 +33,6 @@ def check_in_db(url, conn) -> int or None:
     return None
 
 
-def add_to_db(url: str, msg_id: int, conn: sqlite3.Connection):
+def add_to_db(url: str, msg_id: int, conn):
     conn.execute("INSERT INTO Audios(yt_link,msg_id)"
                  "VALUES (?,?)", (url, msg_id))

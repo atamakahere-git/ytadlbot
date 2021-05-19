@@ -9,6 +9,10 @@ PASS_HASH = os.environ.get('PASS_HASH', None)
 # only enable pooling for testing on local machine, Heroku will only work on webhook method
 POOLING = os.environ.get('POOLING', False)
 
+# Database connection urls
+USER_DB = os.environ.get('USER_DB', None)
+AUDIO_DB = os.environ.get('AUDIO_DB', None)
+
 # start the logger
-LOGGER = start_logger()
-DBHANDLER = start_dbhandler()
+LOGGER = start_logger(user_db=USER_DB)
+DBHANDLER = start_dbhandler(audio_db=AUDIO_DB)

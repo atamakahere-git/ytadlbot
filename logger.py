@@ -1,5 +1,5 @@
-import sqlite3
-import os
+import psycopg2
+import urllib.parse as urlparse
 from telegram import Update
 
 STATUS = False
@@ -10,13 +10,21 @@ SET {} = {}
 WHERE chat_id = ?;'''
 
 
-def start_logger() -> sqlite3.Connection or bool:
+def start_logger(user_db: str) -> bool:
     global STATUS
-    try:
-        os.remove('UserData.db-journal')
-    except FileNotFoundError:
-        pass
-    conn = sqlite3.connect("UserData.db", check_same_thread=False)
+    result = urlparse.urlparse(user_db)
+    username = result.username
+    password = result.password
+    database = result.path[1:]
+    hostname = result.hostname
+    port = result.port
+    conn = psycopg2.connect(
+        database=database,
+        user=username,
+        password=password,
+        host=hostname,
+        port=port
+    )
     if conn:
         STATUS = True
         conn.execute("CREATE TABLE IF NOT EXISTS Users("
@@ -44,7 +52,8 @@ def log(update: Update, conn):
     cmd = update.message.text.split(' ')[0][1:]
     try:
         conn.execute(SQL_BASE_CMD, (chat_id, f"'{first_name}'", f"'{last_name}'", f"'{username}'", 0, 0, 0))
-    except sqlite3.IntegrityError:
+    except Exception as e:
+        print(e)
         try:
             if cmd == 'start':
                 conn.execute(SQL_UPDATE_CMD.format('s_cmd', 's_cmd+1'), (chat_id,))
