@@ -1,6 +1,6 @@
 
 # Youtube Audio Downloader Bot  
-![enter image description here](https://img.shields.io/badge/Bot-@ytadlbot-blue?logo=telegram&style=for-the-badge) 
+[![enter image description here](https://img.shields.io/badge/Bot-@ytadlbot-blue?logo=telegram&style=for-the-badge)](https://t.me/ytadlbot)
 ![GitHub deployments](https://img.shields.io/github/deployments/tanveerraza789/ytadlbot/ytadlbot?label=heroku&logo=heroku&style=for-the-badge)
 
 A Telegram bot written in python that downloads music from YouTube and send it into the chat.  
