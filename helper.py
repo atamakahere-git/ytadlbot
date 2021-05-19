@@ -5,17 +5,26 @@ import requests
 from urlextract import URLExtract
 
 
+def refine_yt_url(url: str) -> str:
+    idx = 0
+    if 'watch?v=' in url:
+        idx = url.find('watch?v=') + 8
+    elif 'youtu.be' in url:
+        idx = url.find('youtu.be/') + 9
+    vid_id = url[idx:idx + 11]
+    return "https://www.youtube.com/watch?v=" + vid_id
+
+
 def is_yt_url(video_id: str) -> bool:
     checker_url = "https://www.youtube.com/oembed?url="
     video_url = checker_url + video_id
-    request = requests.get(video_url)
-    return request.status_code == 200
+    req = requests.get(video_url)
+    return req.status_code == 200
 
 
 def is_pl_url(url: str):
-    if 'list=' in url:
-        r = requests.get(url)
-        return "Video unavailable" not in r.text
+    if 'list=' in url and 'youtu' in url.lower():
+        return True
     return False
 
 
@@ -25,7 +34,6 @@ def get_links_from_text(text: str) -> list:
     for url in urls:
         if is_yt_url(url) or is_pl_url(url):
             yt_urls.append(url)
-
     return yt_urls
 
 
@@ -49,15 +57,22 @@ def is_yt_playlist(url: str) -> bool:
 
 
 def get_pl_link_from_url(url: str) -> str:
-    if 'list=' in url:
+    pl_id = ""
+    if 'watch?v=' in url and '&' in url:
+        idx = url.find('list=')
+        pl_id = url[idx + 5:]
+    elif 'list=' in url:
         eq_idx = url.index('=') + 1
         pl_id = url[eq_idx:]
         if '&' in url:
             amp = url.index('&')
             pl_id = url[eq_idx:amp]
-        return "https://www.youtube.com/playlist?list=" + pl_id
     else:
         return ""
+    if '&' in pl_id:
+        idx = pl_id.find('&')
+        pl_id = pl_id[:idx]
+    return "https://www.youtube.com/playlist?list=" + pl_id
 
 
 def get_yt_links_from_pl(url: str) -> list:
