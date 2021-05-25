@@ -29,7 +29,9 @@ def download_from_url(url: str, chat_id: int):
             'err': 'File size limit exceeded 50MB'
         }
     file_name = audio.title + str(chat_id) + '.m4a'
-    file_path_name = PATH + "'" + file_name + "'"
+    file_name.replace('/', '_').replace('<', '_').replace('>', '_').replace('|', '_').replace(':', '_').replace('&',
+                                                                                                                '_')
+    file_path_name = PATH + file_name
     audio_stream.download(filepath=file_path_name)
     set_metadata(file_path_name, audio.title, audio.author)
     return {
