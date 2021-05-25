@@ -1,7 +1,7 @@
 import pafy
 import music_tag
 import os
-from  helper import get_sec
+from helper import get_sec
 
 CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 PATH = CURR_DIR + '/downloaded/'
@@ -30,6 +30,8 @@ def download_from_url(url: str, chat_id: int):
         }
     file_name = audio.title + str(chat_id) + '.m4a'
     file_path_name = PATH + file_name
+    if '/' in file_path_name:
+        file_path_name.replace('/', '')
     audio_stream.download(filepath=file_path_name)
     set_metadata(file_path_name, audio.title, audio.author)
     return {
