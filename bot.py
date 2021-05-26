@@ -78,7 +78,6 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
                     context.bot.forward_message(chat_id=update.effective_chat.id,
                                                 from_chat_id=OPEN_CHANNEL_USERNAME,
                                                 message_id=msg.message_id)
-
                     add_to_db(url, msg.message_id, DBHANDLER)
                 else:
                     context.bot.send_audio(chat_id=chat_id,
