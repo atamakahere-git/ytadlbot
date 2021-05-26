@@ -1,7 +1,9 @@
-import pafy
-import music_tag
 import os
-from  helper import get_sec
+
+import music_tag
+import pafy
+
+from helper import get_sec
 
 CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 PATH = CURR_DIR + '/downloaded/'
@@ -28,10 +30,12 @@ def download_from_url(url: str, chat_id: int):
             'status': False,
             'err': 'File size limit exceeded 50MB'
         }
-    file_name = audio.title + str(chat_id) + '.m4a'
+    audio_title = audio.title
+    audio_title = audio_title.replace('/', '_').replace('<', '_').replace('>', '_').replace('|', '_').replace(':', '_').replace('&','_')
+    file_name = audio_title + '.m4a'
     file_path_name = PATH + file_name
     audio_stream.download(filepath=file_path_name)
-    set_metadata(file_path_name, audio.title, audio.author)
+    set_metadata(file_path_name, audio_title, audio.author)
     return {
         'status': True,
         'file': file_path_name,

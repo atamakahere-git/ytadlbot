@@ -1,12 +1,12 @@
-import hashlib
 import os
-import requests
-from telegram import Update, Message
+
+from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
-from const import TOKEN, PORT, HEROKU_APP_NAME, POOLING, LOGGER, PASS_HASH, DBHANDLER, OPEN_CHANNEL_USERNAME
+
+from const import TOKEN, PORT, HEROKU_APP_NAME, POOLING, LOGGER, DBHANDLER, OPEN_CHANNEL_USERNAME
+from databasehandler import check_in_db, add_to_db
 from downloader import download_from_url
 from helper import *
-from databasehandler import check_in_db, add_to_db
 from logger import log
 
 OWNER_CHAT_ID = 0
