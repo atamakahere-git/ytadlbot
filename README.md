@@ -9,7 +9,9 @@ A Telegram bot written in python that downloads music from YouTube and send it i
   
 ## Working  
 The bot filter out all the YouTube urls from the received message and send the downloaded audio back to the user. 
-![Working example](image/demo.gif)
+<br>
+<p align="center"><img src="image/demo.gif" width="100%" alt="Working example"></p>
+<br>
   
 ## Detailed working
 1. Program gathers environment variables : BOT_TOKEN, HEROKU_APP_NAME, POOLING, AUDIO_DB, USER_DB, OPEN_CHANNEL_USERNAME   
