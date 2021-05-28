@@ -11,36 +11,7 @@ A Telegram bot written in python that downloads music from YouTube and send it i
 The bot filter out all the YouTube urls from the received message and send the downloaded audio back to the user. 
 <br>
 <p align="center"><img src="image/demo.gif" width="100%" alt="Working example"></p>
-<br>
-  
-## Detailed working
-1. Program gathers environment variables : BOT_TOKEN, HEROKU_APP_NAME, POOLING, AUDIO_DB, USER_DB, OPEN_CHANNEL_USERNAME   
-2. Program initializes logger and db-manager  
-   - Logger logs the user and number of commands they execute  
-   - db-manager is used to manage links and message id of the uploaded file on the open channel  
-      
-3. Bot is fired up using the api token  
-4. Command handles are provided to the bot updater object  
-5. checks if POLLING is enabled  
-   - if pooling is enabled, starts polling  
-   - if not then start web hook  
-      
-6. Listens for updates  
-   1. If update contains a command then executes it as provided  
-   2. If no command is specified, the bot tries to extract YouTube URLs from the text provided  
-   3. Tried to extract links if playlist is provided  
-   4. Downloads M4A file from all the links gathered from previous step  
-   5. Logs user activity for downloading each file  
-   6. For each URL, checks the audio db for its existence if open channel is provided  
-       - If already available, then forward it to the user   
-       - Else download and add it to the db  
-   7. If no open channel is provided, simply send it to the user  
-   8. Process is completed, wait for another job  
-   9. If the program is terminated  
-       1. Stop the bot  
-       2. Close connections from both the DB  
-       3. Exit  
-  
+<br>  
   
 ## Requirements  
 1. [Pafy](https://pythonhosted.org/Pafy/)  
