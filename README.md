@@ -3,13 +3,13 @@
 [![enter image description here](https://img.shields.io/badge/Bot-@ytadlbot-blue?logo=telegram&style=for-the-badge)](https://t.me/ytadlbot)
 ![GitHub deployments](https://img.shields.io/github/deployments/tanveerraza789/ytadlbot/ytadlbot?label=heroku&logo=heroku&style=for-the-badge)
 
-<p align="center"><img src="image/icon.png" width="100px" alt="icon"></p>
+<p align="center"><img src="image/icon.png" width="200px" alt="icon"></p>
 
 A Telegram bot written in python that downloads music from YouTube and send it into the chat.  
   
 ## Working  
 The bot filter out all the YouTube urls from the received message and send the downloaded audio back to the user. 
-![Working example](images/demo.gif)
+![Working example](image/demo.gif)
   
 ## Detailed working
 1. Program gathers environment variables : BOT_TOKEN, HEROKU_APP_NAME, POOLING, AUDIO_DB, USER_DB, OPEN_CHANNEL_USERNAME   
