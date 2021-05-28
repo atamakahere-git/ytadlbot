@@ -63,6 +63,9 @@ Set environment variables in heroku app
 - OPEN_CHANNEL_USERNAME : Universal upload channel username, bot will upload files here and forward it to the user  
   
 Deploy the bot [read here](https://devcenter.heroku.com/articles/getting-started-with-python)  
-  
+
+## Contributions 
+1. [Icon by Alpha Designer](https://instagram.com/alpha_designer18)
+
 ## Future plans  
 1. Making a desktop application that can be used by everyone on their machine by providing their bot API token
