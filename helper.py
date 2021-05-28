@@ -3,16 +3,22 @@ from urllib import request, error
 
 import requests
 from urlextract import URLExtract
+from urllib.parse import urlparse, parse_qs
 
 
-def refine_yt_url(url: str) -> str:
-    idx = 0
-    if 'watch?v=' in url:
-        idx = url.find('watch?v=') + 8
-    elif 'youtu.be' in url:
-        idx = url.find('youtu.be/') + 9
-    vid_id = url[idx:idx + 11]
-    return "https://www.youtube.com/watch?v=" + vid_id
+def get_vid_id(url: str) -> str:
+    query = urlparse(url)
+    if query.hostname == 'youtu.be':
+        return query.path[1:]
+    if query.hostname in ('www.youtube.com', 'youtube.com'):
+        if query.path == '/watch':
+            p = parse_qs(query.query)
+            return p['v'][0]
+        if query.path[:7] == '/embed/':
+            return query.path.split('/')[2]
+        if query.path[:3] == '/v/':
+            return query.path.split('/')[2]
+    return ""
 
 
 def is_yt_url(video_id: str) -> bool:

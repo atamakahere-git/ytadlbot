@@ -1,13 +1,11 @@
-import os
-
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 
 from const import TOKEN, PORT, HEROKU_APP_NAME, POOLING, LOGGER, DBHANDLER, OPEN_CHANNEL_USERNAME
 from databasehandler import check_in_db, add_to_db
-from downloader import download_from_url
 from helper import *
 from logger import log
+from ytadllib import YTADL, FileDownloadError, FileSizeExceeded
 
 OWNER_CHAT_ID = 0
 
@@ -22,80 +20,80 @@ def start(update: Update, context: CallbackContext) -> None:
 def help_bot(update: Update, context: CallbackContext) -> None:
     """Command handler for sending help message"""
     log(update, LOGGER)
-    update.message.reply_text(f"Simply send the url, share from youtube app this bot is smart enough to extract urls "
-                              f"from given text and download multiple audio!\n\nCommands available :\n/d or /download :"
-                              f" download audio with the provided url\n/pldl : Download playlist from its url\n/about "
-                              f": about the developer\n/help : Help message")
+    update.message.reply_text(f"Use telegram inline bot @vid to search youtube video and send me the link\n"
+                              f"Type '@vid Video name' in msg and click on appropriate youtube video\n")
 
 
-def download(update: Update, context: CallbackContext) -> None:
-    """Command handler for /download or /d command, Receives the text, splits it into parts and tries to retrieve
-    youtube urls from it , sends error message to user"""
-    cmd = update.message.text.strip().split(" ")
-    if len(cmd) < 2:
-        update.message.reply_text(f"Invalid command usage, please send url along with download command!")
-        return
-    if len(cmd) > 2:
-        update.message.reply_text(f"Invalid command usage, please provide single along with download command!")
-        return
-    url = cmd[1]
-    if not is_yt_url(url):
-        update.message.reply_text(f"URL id not correct, please check the link")
-        return
-    else:
-        yt_url_msg = update.message.reply_text("Downloading ....")
-        download_url(update, context, url)
-        context.bot.delete_message(message_id=yt_url_msg.message_id, chat_id=yt_url_msg.chat_id)
+def donate(update: Update, context: CallbackContext) -> None:
+    """Command handler for sending help message"""
+    log(update, LOGGER)
+    update.message.reply_text(f"Visit @donateatamaka to donate me")
 
 
 def download_url(update: Update, context: CallbackContext, url: str) -> None:
     """Function to download and send single youtube url downloaded audio file. Sends appropriate error message to
     user """
     log(update, LOGGER)
-    url = refine_yt_url(url)
+    audio = None
+    try:
+        audio = YTADL(url, url_only=False)
+    except ValueError:
+        update.message.reply_text("Invalid URL")
+
+    if audio:
+        if OPEN_CHANNEL_USERNAME:
+            db_status = check_in_db(audio.url, DBHANDLER)
+            if db_status:
+                context.bot.forward_message(chat_id=update.effective_chat.id,
+                                            from_chat_id=OPEN_CHANNEL_USERNAME,
+                                            message_id=db_status)
+                return
+    try:
+        audio.processor_url()
+    except FileSizeExceeded:
+        update.message.reply_text("File size limit exceeded")
+        return
+
+    try:
+        audio.download()
+    except FileDownloadError:
+        update.message.reply_text("Unable to download file")
+        return
     if OPEN_CHANNEL_USERNAME:
-        db_status = check_in_db(url, DBHANDLER)
-        if db_status:
+        try:
+            msg = context.bot.send_audio(chat_id=OPEN_CHANNEL_USERNAME,
+                                         audio=audio.audio_file,
+                                         title=audio.pafy_obj.title,
+                                         thumb=audio.thumbnail,
+                                         performer=audio.pafy_obj.author,
+                                         duration=get_sec(audio.pafy_obj.duration),
+                                         timeout=60)
             context.bot.forward_message(chat_id=update.effective_chat.id,
                                         from_chat_id=OPEN_CHANNEL_USERNAME,
-                                        message_id=db_status)
-            return
-    audio_meta = download_from_url(url, update.message.chat.id)
-    if audio_meta:
-        if audio_meta['status']:
-            chat_id = update.message.chat.id
-            audio_file = open(audio_meta['file'], 'rb')
-            audio_thumb = requests.get(audio_meta['thumb']).content
+                                        message_id=msg.message_id)
             try:
-                if OPEN_CHANNEL_USERNAME:
-                    msg = context.bot.send_audio(chat_id=OPEN_CHANNEL_USERNAME,
-                                                 audio=audio_file,
-                                                 title=audio_meta['title'],
-                                                 thumb=audio_thumb,
-                                                 performer=audio_meta['author'],
-                                                 duration=audio_meta['duration'],
-                                                 timeout=120)
-                    context.bot.forward_message(chat_id=update.effective_chat.id,
-                                                from_chat_id=OPEN_CHANNEL_USERNAME,
-                                                message_id=msg.message_id)
-                    add_to_db(url, msg.message_id, DBHANDLER)
-                else:
-                    context.bot.send_audio(chat_id=chat_id,
-                                           audio=audio_file,
-                                           title=audio_meta['title'],
-                                           thumb=audio_thumb,
-                                           performer=audio_meta['author'],
-                                           duration=audio_meta['duration'],
-                                           timeout=120)
+                add_to_db(audio.url, msg.message_id, DBHANDLER)
             except Exception as e:
-                update.message.reply_text("Unable to upload file")
-            audio_file.close()
-            os.remove(audio_meta['file'])
-        else:
-            update.message.reply_text(audio_meta['err'])
-            return
+                print(e)
+                print("DB not working")
+        except Exception as e:
+            print(e)
+            print("Upload to open channel failed")
+            context.bot.send_audio(chat_id=update.message.chat_id,
+                                   audio=audio.audio_file,
+                                   title=audio.pafy_obj.title,
+                                   thumb=audio.thumbnail,
+                                   performer=audio.pafy_obj.author,
+                                   duration=get_sec(audio.pafy_obj.duration),
+                                   timeout=60)
     else:
-        update.message.reply_text("Invalid youtube url!")
+        context.bot.send_audio(chat_id=update.message.chat_id,
+                               audio=audio.audio_file,
+                               title=audio.pafy_obj.title,
+                               thumb=audio.thumbnail,
+                               performer=audio.pafy_obj.author,
+                               duration=get_sec(audio.pafy_obj.duration),
+                               timeout=60)
 
 
 def extract_url_download(update: Update, context: CallbackContext) -> None:
@@ -109,32 +107,6 @@ def extract_url_download(update: Update, context: CallbackContext) -> None:
                 download_playlist_url(update, context, url)
             else:
                 download_url(update, context, url)
-        context.bot.delete_message(message_id=yt_urls_msg.message_id, chat_id=yt_urls_msg.chat_id)
-
-
-def download_playlist(update: Update, context: CallbackContext) -> None:
-    """Extract youtube urls from the playlist url send to the bot and starts downloading and sending each file"""
-    log(update, LOGGER)
-    pl_link = update.message.text.split(' ')
-    if len(pl_link) < 2:
-        update.message.reply_text("Please provide playlist url with this command")
-        return
-    if len(pl_link) > 2:
-        update.message.reply_text("Please provide only 1 link \n Proper usage : /pldl youtube-playlist-url")
-        return
-    pl_link = pl_link[1]
-    if 'list=' not in pl_link:
-        update.message.reply_text("Please provide valid playlist url")
-        return
-    pl_link = get_pl_link_from_url(pl_link)
-    if pl_link == '':
-        update.message.reply_text("Unable to resolve playlist url")
-        return
-    yt_urls = get_yt_links_from_pl(pl_link)
-    yt_urls_msg = update.message.reply_text(pretty_url_string(yt_urls), disable_web_page_preview=True)
-    if len(yt_urls) > 0:
-        for url in yt_urls:
-            download_url(update, context, url)
         context.bot.delete_message(message_id=yt_urls_msg.message_id, chat_id=yt_urls_msg.chat_id)
 
 
@@ -157,12 +129,9 @@ def main() -> None:
         print("Token is incorrect")
         exit(1)
     # Command handlers
-    updater.dispatcher.add_handler(CommandHandler('start', start))
-    updater.dispatcher.add_handler(CommandHandler('help', help_bot))
-    updater.dispatcher.add_handler(CommandHandler('download', download, run_async=True))
-    updater.dispatcher.add_handler(CommandHandler('d', download, run_async=True))
-    updater.dispatcher.add_handler(CommandHandler('dlpl', download_playlist, run_async=True))
-    updater.dispatcher.add_handler(CommandHandler('download_playlist', download_playlist, run_async=True))
+    updater.dispatcher.add_handler(CommandHandler('start', start, run_async=True))
+    updater.dispatcher.add_handler(CommandHandler('help', help_bot, run_async=True))
+    updater.dispatcher.add_handler(CommandHandler('donate', donate, run_async=True))
     # Message handler
     updater.dispatcher.add_handler(
         MessageHandler(Filters.text & ~Filters.command, extract_url_download, run_async=True))
