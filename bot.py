@@ -40,8 +40,8 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
     try:
         audio = YTADL(url, url_only=False)
         if '-' in audio.pafy_obj.title:
-            title = audio.pafy_obj.title.split('-')[1]
-            artist = audio.pafy_obj.title.split('-')[0]
+            title = audio.pafy_obj.title.split('-')[1].strip()
+            artist = audio.pafy_obj.title.split('-')[0].strip()
     except ValueError:
         update.message.reply_text("Invalid URL")
 
