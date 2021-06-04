@@ -49,10 +49,13 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
         if OPEN_CHANNEL_USERNAME:
             db_status = check_in_db(audio.url, DBHANDLER)
             if db_status:
-                context.bot.forward_message(chat_id=update.effective_chat.id,
-                                            from_chat_id=OPEN_CHANNEL_USERNAME,
-                                            message_id=db_status)
-                return
+                try:
+                    context.bot.forward_message(chat_id=update.effective_chat.id,
+                                                from_chat_id=OPEN_CHANNEL_USERNAME,
+                                                message_id=db_status)
+                    return
+                except Exception as e:
+                    print("Msg not found on channel")
     try:
         audio.processor_url()
     except FileSizeExceeded:
