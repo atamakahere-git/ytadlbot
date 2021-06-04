@@ -35,8 +35,13 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
     user """
     log(update, LOGGER)
     audio = None
+    title = ''
+    artist = ''
     try:
         audio = YTADL(url, url_only=False)
+        if '-' in audio.pafy_obj.title:
+            title = audio.pafy_obj.title.split('-')[1]
+            artist = audio.pafy_obj.title.split('-')[0]
     except ValueError:
         update.message.reply_text("Invalid URL")
 
@@ -63,9 +68,9 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
         try:
             msg = context.bot.send_audio(chat_id=OPEN_CHANNEL_USERNAME,
                                          audio=audio.audio_file,
-                                         title=audio.pafy_obj.title,
+                                         title=title,
                                          thumb=audio.thumbnail,
-                                         performer=audio.pafy_obj.author,
+                                         performer=artist,
                                          duration=get_sec(audio.pafy_obj.duration),
                                          timeout=60)
             context.bot.forward_message(chat_id=update.effective_chat.id,
@@ -81,17 +86,17 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
             print("Upload to open channel failed")
             context.bot.send_audio(chat_id=update.message.chat_id,
                                    audio=audio.audio_file,
-                                   title=audio.pafy_obj.title,
+                                   title=title,
                                    thumb=audio.thumbnail,
-                                   performer=audio.pafy_obj.author,
+                                   performer=artist,
                                    duration=get_sec(audio.pafy_obj.duration),
                                    timeout=60)
     else:
         context.bot.send_audio(chat_id=update.message.chat_id,
                                audio=audio.audio_file,
-                               title=audio.pafy_obj.title,
+                               title=title,
                                thumb=audio.thumbnail,
-                               performer=audio.pafy_obj.author,
+                               performer=artist,
                                duration=get_sec(audio.pafy_obj.duration),
                                timeout=60)
 
