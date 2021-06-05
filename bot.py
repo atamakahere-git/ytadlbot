@@ -5,7 +5,7 @@ from const import TOKEN, PORT, HEROKU_APP_NAME, POOLING, LOGGER, DBHANDLER, OPEN
 from databasehandler import check_in_db, add_to_db
 from helper import *
 from logger import log
-from ytadllib import YTADL, FileDownloadError, FileSizeExceeded
+from ytadllib import YTADL, FileDownloadError, FileSizeExceeded, UnableToDownload
 
 OWNER_CHAT_ID = 0
 
@@ -65,6 +65,9 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
     try:
         audio.download()
     except FileDownloadError:
+        update.message.reply_text("Unable to download file")
+        return
+    except UnableToDownload:
         update.message.reply_text("Unable to download file")
         return
     if OPEN_CHANNEL_USERNAME:
