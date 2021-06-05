@@ -68,7 +68,7 @@ def add_to_db(url: str, msg_id: int, conn):
     if STATUS:
         cur = conn.cursor()
         cur.execute("INSERT INTO Audios(yt_link,msg_id)"
-                    "VALUES ({},{}) ON DUPLICATE KEY UPDATE msg_id = {}".format("'" + url + "'", msg_id, msg_id))
+                    "VALUES ({},{}) ON CONFLICT UPDATE msg_id = {}".format("'" + url + "'", msg_id, msg_id))
         conn.commit()
     else:
         print("DB is not active cannot add the entry!")
