@@ -1,7 +1,7 @@
 pafy==0.5.5
-python-telegram-bot==13.5
-requests==2.25.1
-urlextract==1.2.0
-urllib3==1.26.4
-youtube-dl==2021.5.16
-psycopg2==2.8.6
+python-telegram-bot==13.8.1
+requests==2.26.0
+urlextract==1.4.0
+urllib3==1.26.7
+youtube-dl==2021.6.6
+psycopg2==2.9.2
