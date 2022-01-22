@@ -1,11 +1,12 @@
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 
-from const import TOKEN, PORT, HEROKU_APP_NAME, POOLING, LOGGER, DBHANDLER, OPEN_CHANNEL_USERNAME
+from const import TOKEN, PORT, HEROKU_APP_NAME, POLLING, LOGGER, DBHANDLER, OPEN_CHANNEL_USERNAME
 from databasehandler import check_in_db, add_to_db
 from helper import *
 from logger import log
-from ytadllib import YTADL, FileDownloadError, FileSizeExceeded
+from ytadllib import YTADL, FileDownloadError, FileSizeExceeded, UnableToDownload
+
 
 OWNER_CHAT_ID = 0
 
@@ -35,8 +36,14 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
     user """
     log(update, LOGGER)
     audio = None
+    title = ''
+    artist = ''
     try:
         audio = YTADL(url, url_only=False)
+        if '-' in audio.pafy_obj.title:
+            title = audio.pafy_obj.title.split('-')[1].strip()
+            artist = audio.pafy_obj.title.split('-')[0].strip()
+
     except ValueError:
         update.message.reply_text("Invalid URL")
 
@@ -44,10 +51,13 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
         if OPEN_CHANNEL_USERNAME:
             db_status = check_in_db(audio.url, DBHANDLER)
             if db_status:
-                context.bot.forward_message(chat_id=update.effective_chat.id,
-                                            from_chat_id=OPEN_CHANNEL_USERNAME,
-                                            message_id=db_status)
-                return
+                try:
+                    context.bot.forward_message(chat_id=update.effective_chat.id,
+                                                from_chat_id=OPEN_CHANNEL_USERNAME,
+                                                message_id=db_status)
+                    return
+                except Exception as e:
+                    print("Msg not found on channel")
     try:
         audio.processor_url()
     except FileSizeExceeded:
@@ -59,13 +69,17 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
     except FileDownloadError:
         update.message.reply_text("Unable to download file")
         return
+    except UnableToDownload:
+        update.message.reply_text("Unable to download file")
+        return
+
     if OPEN_CHANNEL_USERNAME:
         try:
             msg = context.bot.send_audio(chat_id=OPEN_CHANNEL_USERNAME,
                                          audio=audio.audio_file,
-                                         title=audio.pafy_obj.title,
+                                         title=title,
                                          thumb=audio.thumbnail,
-                                         performer=audio.pafy_obj.author,
+                                         performer=artist,
                                          duration=get_sec(audio.pafy_obj.duration),
                                          timeout=60)
             context.bot.forward_message(chat_id=update.effective_chat.id,
@@ -81,23 +95,23 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
             print("Upload to open channel failed")
             context.bot.send_audio(chat_id=update.message.chat_id,
                                    audio=audio.audio_file,
-                                   title=audio.pafy_obj.title,
+                                   title=title,
                                    thumb=audio.thumbnail,
-                                   performer=audio.pafy_obj.author,
+                                   performer=artist,
                                    duration=get_sec(audio.pafy_obj.duration),
                                    timeout=60)
     else:
         context.bot.send_audio(chat_id=update.message.chat_id,
                                audio=audio.audio_file,
-                               title=audio.pafy_obj.title,
+                               title=title,
                                thumb=audio.thumbnail,
-                               performer=audio.pafy_obj.author,
+                               performer=artist,
                                duration=get_sec(audio.pafy_obj.duration),
                                timeout=60)
 
 
 def extract_url_download(update: Update, context: CallbackContext) -> None:
-    """Extract youtube urls from the random text send to the bot and starts downloading and sending from url"""
+    """Extract YouTube urls from the random text send to the bot and starts downloading and sending from url"""
     received_text = update.message.text
     yt_urls = get_links_from_text(received_text)
     yt_urls_msg = update.message.reply_text(pretty_url_string(yt_urls), disable_web_page_preview=True)
@@ -106,12 +120,15 @@ def extract_url_download(update: Update, context: CallbackContext) -> None:
             if 'list=' in url:
                 download_playlist_url(update, context, url)
             else:
-                download_url(update, context, url)
+                try:
+                    download_url(update, context, url)
+                except FileSizeExceeded:
+                    update.message.reply_text("File size exceeded")
         context.bot.delete_message(message_id=yt_urls_msg.message_id, chat_id=yt_urls_msg.chat_id)
 
 
 def download_playlist_url(update: Update, context: CallbackContext, pl_link: str) -> None:
-    """Extract youtube urls from the playlist url send to the bot and starts downloading and sending each file"""
+    """Extract YouTube urls from the playlist url send to the bot and starts downloading and sending each file"""
     pl_link = get_pl_link_from_url(pl_link)
     yt_urls = get_yt_links_from_pl(pl_link)
     yt_urls_msg = update.message.reply_text(pretty_url_string(yt_urls), disable_web_page_preview=True)
@@ -135,8 +152,8 @@ def main() -> None:
     # Message handler
     updater.dispatcher.add_handler(
         MessageHandler(Filters.text & ~Filters.command, extract_url_download, run_async=True))
-    # Pooling method to test on local machine
-    if POOLING:
+    # Polling method to test on local machine
+    if POLLING:
         updater.start_polling()
     else:
         # webhook method for heroku
