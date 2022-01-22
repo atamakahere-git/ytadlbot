@@ -7,7 +7,7 @@ PORT = int(os.environ.get("PORT", "8443"))
 HEROKU_APP_NAME = os.environ.get('HEROKU_APP_NAME', None)
 PASS_HASH = os.environ.get('PASS_HASH', None)
 # only enable pooling for testing on local machine, Heroku will only work on webhook method
-POOLING = os.environ.get('POOLING', False)
+POLLING = os.environ.get('POOLING', False)
 OPEN_CHANNEL_USERNAME = os.environ.get('OPEN_CHANNEL_USERNAME', None)
 # Database connection urls
 USER_DB = os.environ.get('USER_DB', None)

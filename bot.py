@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
 
-from const import TOKEN, PORT, HEROKU_APP_NAME, POOLING, LOGGER, DBHANDLER, OPEN_CHANNEL_USERNAME
+from const import TOKEN, PORT, HEROKU_APP_NAME, POLLING, LOGGER, DBHANDLER, OPEN_CHANNEL_USERNAME
 from databasehandler import check_in_db, add_to_db
 from helper import *
 from logger import log
@@ -150,8 +150,8 @@ def main() -> None:
     # Message handler
     updater.dispatcher.add_handler(
         MessageHandler(Filters.text & ~Filters.command, extract_url_download, run_async=True))
-    # Pooling method to test on local machine
-    if POOLING:
+    # Polling method to test on local machine
+    if POLLING:
         updater.start_polling()
     else:
         # webhook method for heroku
