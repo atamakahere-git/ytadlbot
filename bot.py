@@ -70,6 +70,7 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
     except UnableToDownload:
         update.message.reply_text("Unable to download file")
         return
+
     if OPEN_CHANNEL_USERNAME:
         try:
             msg = context.bot.send_audio(chat_id=OPEN_CHANNEL_USERNAME,
@@ -108,7 +109,7 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
 
 
 def extract_url_download(update: Update, context: CallbackContext) -> None:
-    """Extract youtube urls from the random text send to the bot and starts downloading and sending from url"""
+    """Extract YouTube urls from the random text send to the bot and starts downloading and sending from url"""
     received_text = update.message.text
     yt_urls = get_links_from_text(received_text)
     yt_urls_msg = update.message.reply_text(pretty_url_string(yt_urls), disable_web_page_preview=True)
@@ -117,12 +118,15 @@ def extract_url_download(update: Update, context: CallbackContext) -> None:
             if 'list=' in url:
                 download_playlist_url(update, context, url)
             else:
-                download_url(update, context, url)
+                try:
+                    download_url(update, context, url)
+                except FileSizeExceeded:
+                    update.message.reply_text("File size exceeded")
         context.bot.delete_message(message_id=yt_urls_msg.message_id, chat_id=yt_urls_msg.chat_id)
 
 
 def download_playlist_url(update: Update, context: CallbackContext, pl_link: str) -> None:
-    """Extract youtube urls from the playlist url send to the bot and starts downloading and sending each file"""
+    """Extract YouTube urls from the playlist url send to the bot and starts downloading and sending each file"""
     pl_link = get_pl_link_from_url(pl_link)
     yt_urls = get_yt_links_from_pl(pl_link)
     yt_urls_msg = update.message.reply_text(pretty_url_string(yt_urls), disable_web_page_preview=True)
