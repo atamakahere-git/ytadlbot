@@ -1,3 +1,4 @@
+
 import os
 
 import pafy
@@ -23,6 +24,7 @@ class FileDownloadError(Exception):
 
 
 class UnableToDownload(Exception):
+
     def __str__(self) -> str:
         return "Unable to download file"
 

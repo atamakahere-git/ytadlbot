@@ -7,6 +7,7 @@ from helper import *
 from logger import log
 from ytadllib import YTADL, FileDownloadError, FileSizeExceeded, UnableToDownload
 
+
 OWNER_CHAT_ID = 0
 
 
@@ -42,6 +43,7 @@ def download_url(update: Update, context: CallbackContext, url: str) -> None:
         if '-' in audio.pafy_obj.title:
             title = audio.pafy_obj.title.split('-')[1].strip()
             artist = audio.pafy_obj.title.split('-')[0].strip()
+
     except ValueError:
         update.message.reply_text("Invalid URL")
 
