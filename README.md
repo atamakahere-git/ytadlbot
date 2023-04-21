@@ -1,15 +1,17 @@
+# Youtube Audio Downloader Bot
 
-# Youtube Audio Downloader Bot  
 [![enter image description here](https://img.shields.io/badge/Bot-@ytadlbot-blue?logo=telegram&style=for-the-badge)](https://t.me/ytadlbot)
 ![GitHub deployments](https://img.shields.io/github/deployments/tanveerraza789/ytadlbot/ytadlbot?label=heroku&logo=heroku&style=for-the-badge)
 
 <p align="center"><img src="image/icon.png" width="200px" alt="icon"></p>
 
-A Telegram bot written in python that downloads music from YouTube and send it into the chat.  
-  
-## Working  
-The bot filter out all the YouTube urls from the received message and send the downloaded audio back to the user. 
+A Telegram bot written in python that downloads music from YouTube and send it into the chat.
+
+## Working
+
+The bot filter out all the YouTube urls from the received message and send the downloaded audio back to the user.
 <br>
+
 <p align="center"><img src="image/demo.gif" width="100%" alt="Working example"></p>
 <br>  
   
@@ -33,10 +35,12 @@ Set environment variables in heroku app
 - USER_DB : PostgreSQL DB link for user management  
 - OPEN_CHANNEL_USERNAME : Universal upload channel username, bot will upload files here and forward it to the user  
   
-Deploy the bot [read here](https://devcenter.heroku.com/articles/getting-started-with-python)  
+Deploy the bot [read here](https://devcenter.heroku.com/articles/getting-started-with-python)
 
-## Contributions 
+## Contributions
+
 1. [Icon by Alpha Designer](https://instagram.com/alpha_designer18)
 
-## Future plans  
+## Future plans
+
 1. Making a desktop application that can be used by everyone on their machine by providing their bot API token

@@ -1,10 +1,9 @@
-
 import os
 
-import pafy
 import requests
 
-from helper import is_yt_url, get_vid_id
+import pafy
+from helper import get_vid_id, is_yt_url
 
 FILE_SIZE_LIMIT = 50000000
 
@@ -24,7 +23,6 @@ class FileDownloadError(Exception):
 
 
 class UnableToDownload(Exception):
-
     def __str__(self) -> str:
         return "Unable to download file"
 
@@ -55,16 +53,20 @@ class YTADL:
         """Starts processing link and gather meta infos"""
         try:
             self.pafy_obj = pafy.new(self.vid_id, size=True)
-            self.audio_stream = self.pafy_obj.getbestaudio(preftype='m4a')
+            self.audio_stream = self.pafy_obj.getbestaudio(preftype="m4a")
             self.size = self.audio_stream.get_filesize()
             self.downloadable = False
             if self.size > FILE_SIZE_LIMIT:
                 print("Bot will not be able to send file above 50MB!")
                 raise FileSizeExceeded
             self.downloadable = True
-            self.file_title = self.pafy_obj.title.replace('/', '_').replace('<', '_').replace('>', '_')
+            self.file_title = (
+                self.pafy_obj.title.replace("/", "_")
+                .replace("<", "_")
+                .replace(">", "_")
+            )
             self.file_ext = self.audio_stream.extension
-            self.filename = ''
+            self.filename = ""
             self.audio_file = None
             self.thumbnail = requests.get(self.pafy_obj.getbestthumb()).content
         except:
@@ -74,9 +76,9 @@ class YTADL:
         """Downloads the audio file"""
         self.filename = self.audio_stream.download(quiet=True)
         if self.filename is None:
-            self.filename = self.file_title + '.' + self.file_ext
+            self.filename = self.file_title + "." + self.file_ext
         try:
-            self.audio_file = open(self.filename, 'rb')
+            self.audio_file = open(self.filename, "rb")
         except FileNotFoundError:
             print("File download failed!")
             raise FileDownloadError

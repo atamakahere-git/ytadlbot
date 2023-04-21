@@ -1,7 +1,7 @@
 import bot
-from const import TOKEN, PORT, HEROKU_APP_NAME, POLLING
+from const import HEROKU_APP_NAME, POLLING, PORT, TOKEN
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if TOKEN is None:
         print("Token not found")
     elif PORT is None and not POLLING:

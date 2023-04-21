@@ -4,11 +4,11 @@ import psycopg2
 from telegram import Update
 
 STATUS = False
-SQL_BASE_CMD = ''' INSERT INTO Users(chat_id,first_name,last_name,username,usage)
-              VALUES({},{},{},{},{}) '''
-SQL_UPDATE_CMD = '''UPDATE Users
+SQL_BASE_CMD = """ INSERT INTO Users(chat_id,first_name,last_name,username,usage)
+              VALUES({},{},{},{},{}) """
+SQL_UPDATE_CMD = """UPDATE Users
 SET usage = usage + 1
-WHERE chat_id = {};'''
+WHERE chat_id = {};"""
 
 
 def start_logger(user_db: str):
@@ -25,7 +25,7 @@ def start_logger(user_db: str):
             user=username,
             password=password,
             host=hostname,
-            port=port
+            port=port,
         )
     except Exception as e:
         print(e)
@@ -36,12 +36,14 @@ def start_logger(user_db: str):
         STATUS = True
         cur = conn.cursor()
         try:
-            cur.execute("CREATE TABLE IF NOT EXISTS Users("
-                        "chat_id INTEGER PRIMARY KEY,"
-                        "first_name TEXT,"
-                        "last_name TEXT,"
-                        "username TEXT,"
-                        "usage INTEGER DEFAULT 0)")
+            cur.execute(
+                "CREATE TABLE IF NOT EXISTS Users("
+                "chat_id INTEGER PRIMARY KEY,"
+                "first_name TEXT,"
+                "last_name TEXT,"
+                "username TEXT,"
+                "usage INTEGER DEFAULT 0)"
+            )
         except Exception as e:
             print(e)
             print("Table creation failed")
@@ -65,11 +67,14 @@ def log(update: Update, conn):
     cur = conn.cursor()
     try:
         cur.execute(
-            SQL_BASE_CMD.format(chat_id,
-                                "'" + first_name + "'",
-                                "'" + last_name + "'",
-                                "'" + username + "'",
-                                0))
+            SQL_BASE_CMD.format(
+                chat_id,
+                "'" + first_name + "'",
+                "'" + last_name + "'",
+                "'" + username + "'",
+                0,
+            )
+        )
     except Exception:
         try:
             cur.execute(SQL_UPDATE_CMD.format(chat_id))

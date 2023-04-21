@@ -25,7 +25,7 @@ def start_dbhandler(audio_db: str):
             user=username,
             password=password,
             host=hostname,
-            port=port
+            port=port,
         )
         STATUS = True
     except Exception as e:
@@ -36,9 +36,11 @@ def start_dbhandler(audio_db: str):
     if conn:
         cur = conn.cursor()
         try:
-            cur.execute("CREATE TABLE IF NOT EXISTS Audios("
-                        "yt_link TEXT PRIMARY KEY,"
-                        "msg_id INTEGER)")
+            cur.execute(
+                "CREATE TABLE IF NOT EXISTS Audios("
+                "yt_link TEXT PRIMARY KEY,"
+                "msg_id INTEGER)"
+            )
         except Exception as e:
             print(e)
             print("Table creation failed")
@@ -54,7 +56,10 @@ def check_in_db(url, conn) -> int or None:
         cur = conn.cursor()
         row = []
         try:
-            cur.execute("SELECT msg_id from Audios where yt_link = {}".format("'" + url + "'"))
+            cur.execute(
+                "SELECT msg_id from Audios where yt_link = {}".format(
+                    "'" + url + "'")
+            )
             row = cur.fetchall()
         except Exception as e:
             print(e)
@@ -70,8 +75,12 @@ def check_in_db(url, conn) -> int or None:
 def add_to_db(url: str, msg_id: int, conn):
     if STATUS:
         cur = conn.cursor()
-        cur.execute("INSERT INTO Audios(yt_link,msg_id)"
-                    "VALUES ({},{}) ON CONFLICT UPDATE msg_id = {}".format("'" + url + "'", msg_id, msg_id))
+        cur.execute(
+            "INSERT INTO Audios(yt_link,msg_id)"
+            "VALUES ({},{}) ON CONFLICT UPDATE msg_id = {}".format(
+                "'" + url + "'", msg_id, msg_id
+            )
+        )
         conn.commit()
     else:
         print("DB is not active cannot add the entry!")
